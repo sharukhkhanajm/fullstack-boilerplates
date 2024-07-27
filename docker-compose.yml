@@ -18,37 +18,29 @@ services:
     build:
       context: ./frontend
       dockerfile: ./frontend.dockerfile
-    deploy:
-      mode: replicated
-      replicas: 1
+    restart: unless-stopped
     ports:
       - '5173:5173'  # Ensure this port is exposed for internal communication
     volumes:
       - /app/node_modules
       - ./frontend:/app
-    environment:
-      BROKER_URL: http://backend
-      WDS_SOCKET_PORT: 0
+    env_file: ./frontend/.env
+    depends_on:
+      - backend
 
   backend:
     build:
       context: ./backend
       dockerfile: ./backend.dockerfile
+      target: dev
     restart: always
     ports:
       - '8080:8080'
-    deploy:
-      mode: replicated
-      replicas: 1
-    environment:
-      PORT: ${PORT}
-      DB_HOST: ${DB_HOST} # If you are using local database. Like PgAdmin or DBeaver. Use host.docker.internal in the .env file or ip address of the host machine.
-      # DB_HOST: db # Uncomment this line if you are using a separate database container. Comment the line above. Uncomment the db service below.
-      DB_PORT: ${DB_PORT}
-      DB_SCHEMA: ${DB_SCHEMA}
-      DB_DATABASE: ${DB_DATABASE}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
+    env_file: ./backend/.env
+    volumes:
+      - ./backend:/app
+    # depends_on:
+    #   - db
   
   # db:
   #   image: postgres:13
@@ -58,3 +50,5 @@ services:
   #     POSTGRES_PASSWORD: ${DB_PASSWORD}
   #   ports:
   #     - '5432:5432'
+  #   volumes:
+  #     - ./db:/var/lib/postgresql/data

@@ -1,20 +1,10 @@
-FROM golang:1.22.0-alpine as buidler
+FROM golang:1.22-alpine as base
 
-RUN mkdir /app
+# Create another stage called "dev" that is based off of our "base" stage (so we have golang available to us)
+FROM base as dev
 
-COPY . /app
+RUN go install github.com/air-verse/air@latest
 
 WORKDIR /app
 
-RUN CGO_ENABLED=0 go build -o backendApp .
-
-RUN chmod +x /app/backendApp
-
-# build a tiny docker image
-FROM alpine:latest
-
-RUN mkdir /app
-
-COPY --from=buidler /app/backendApp /app
-
-CMD [ "/app/backendApp" ]
+ENTRYPOINT ["air"]

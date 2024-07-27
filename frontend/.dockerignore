@@ -1,0 +1,34 @@
+node_modules
+dist
+*.env
+
+# Node modules
+node_modules
+
+# Build output
+build/
+dist/
+
+# Environment files
+*.env
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependency directories
+jspm_packages/
+
+# IDE/editor specific files
+.vscode/
+.idea/
+*.swp
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
