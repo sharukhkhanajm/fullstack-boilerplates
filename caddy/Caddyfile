@@ -1,5 +1,7 @@
 {
-    email   acetyl-coa@windowslive.com
+    local_certs
+    # email addyour@emailhere.com 
+    # Your email address. Mainly used when creating an ACME account with your CA, and is highly recommended in case there are problems with your certificates.
 }
 
 (static) {
@@ -21,20 +23,20 @@
     }
 }
 
-localhost:80 {
+auth.localhost {
     # encode for make file as small as possible before send it
     encode zstd gzip
     # import (static) information
     import static
 
-    reverse_proxy http://frontend:5173
+    reverse_proxy frontend:5173
 
     handle_path /api* {
     uri strip_prefix /api
-    reverse_proxy http://backend:8080
+    reverse_proxy backend:8080
     }
 }
 
-backend:80 {
-    reverse_proxy http://backend:8080
+api.auth.localhost {
+    reverse_proxy backend:8080
 }

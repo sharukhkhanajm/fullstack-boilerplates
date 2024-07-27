@@ -5,28 +5,34 @@ services:
     build:
       context: ./caddy
       dockerfile: ./caddy.dockerfile
-    deploy:
-      mode: replicated
-      replicas: 1
     ports:
       - '80:80'
+      - '443:443'
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
     depends_on:
       - backend
       - frontend
+    networks:
+      - my_network
 
   frontend:
     build:
       context: ./frontend
       dockerfile: ./frontend.dockerfile
     restart: unless-stopped
-    ports:
-      - '5173:5173'  # Ensure this port is exposed for internal communication
+    # ports:
+    #   - '5173:5173' # we can remove this line because we are using caddy as a reverse proxy
     volumes:
       - /app/node_modules
       - ./frontend:/app
     env_file: ./frontend/.env
     depends_on:
       - backend
+    networks:
+      - my_network
 
   backend:
     build:
@@ -34,21 +40,35 @@ services:
       dockerfile: ./backend.dockerfile
       target: dev
     restart: always
-    ports:
-      - '8080:8080'
+    # ports:
+    #   - '8080:8080' # we can remove this line because we are using caddy as a reverse proxy
     env_file: ./backend/.env
     volumes:
       - ./backend:/app
-    # depends_on:
-    #   - db
+    depends_on:
+      - db
+    networks:
+      - my_network
   
-  # db:
-  #   image: postgres:13
-  #   environment:
-  #     POSTGRES_DB: ${DB_DATABASE}
-  #     POSTGRES_USER: ${DB_USERNAME}
-  #     POSTGRES_PASSWORD: ${DB_PASSWORD}
-  #   ports:
-  #     - '5432:5432'
-  #   volumes:
-  #     - ./db:/var/lib/postgresql/data
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_db:/var/lib/postgresql/data
+      - ./dbshell:/docker-entrypoint-initdb.d/
+    networks:
+      - my_network
+
+volumes:
+  postgres_db:
+  caddy_data:
+  caddy_config:
+networks:
+  my_network:
+    driver: bridge
+  
