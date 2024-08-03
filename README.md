@@ -25,6 +25,11 @@ Simply clone the repository and checkout the branch for the stack you need. Foll
 Absolutely! We welcome contributions. Feel free to open issues or submit pull requests to add new stacks or improve existing ones.
 
 ## Getting Started
+
+**!!important**
+
+Make sure to create the `.env` file and put the content from `.env.example`
+
 Follow these steps to get started with a boilerplate:
 
 1. Clone the Repository
