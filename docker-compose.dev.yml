@@ -7,11 +7,10 @@ services:
     ports:
       - '80:80'
       - '443:443'
-    environment:
-      DOMAIN_NAME: ${DOMAIN_NAME}
     volumes:
       - caddy_data:/data
       - caddy_config:/config
+      - ./caddy/Caddyfile.dev:/etc/caddy/Caddyfile
     depends_on:
       - backend
       - frontend
@@ -22,23 +21,33 @@ services:
     build:
       context: ./frontend
       dockerfile: ./frontend.dockerfile
-      target: prod
+      target: dev
     restart: unless-stopped
+    # ports:
+    #   - '5173:5173' # we can remove this line because we are using caddy as a reverse proxy
+    volumes:
+      - /app/node_modules
+      - ./frontend:/app
     depends_on:
       - backend
     networks:
       - my_network
+    command: npm run dev -- --host
 
   backend:
     build:
       context: ./backend
       dockerfile: ./backend.dockerfile
-      target: prod
-    restart: unless-stopped
+      target: dev
+    restart: always
+    # ports:
+    #   - '8080:8080' # we can remove this line because we are using caddy as a reverse proxy
     depends_on:
       - db
     networks:
       - my_network
+    volumes:
+      - ./backend:/app
     environment:
       PORT: ${PORT}
       DB_HOST: ${DB_HOST}
@@ -54,6 +63,8 @@ services:
       POSTGRES_DB: ${DB_DATABASE}
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - '5432:5432'
     volumes:
       - postgres_db:/var/lib/postgresql/data
       - ./dbshell:/docker-entrypoint-initdb.d/

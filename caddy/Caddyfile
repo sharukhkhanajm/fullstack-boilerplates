@@ -1,5 +1,4 @@
 {
-    local_certs
     # email addyour@emailhere.com 
     # Your email address. Mainly used when creating an ACME account with your CA, and is highly recommended in case there are problems with your certificates.
 }
@@ -23,20 +22,60 @@
     }
 }
 
-auth.localhost {
+{$DOMAIN_NAME:invalid} {
     # encode for make file as small as possible before send it
     encode zstd gzip
     # import (static) information
     import static
 
-    reverse_proxy frontend:5173
+    reverse_proxy frontend:80 # based on your frontend port in Caddyfile in frontend directory
 
-    handle_path /api* {
+    handle /api* {
     uri strip_prefix /api
     reverse_proxy backend:8080
     }
 }
 
-api.auth.localhost {
+www.{$DOMAIN_NAME:invalid} {
+	redir https://{$DOMAIN_NAME:invalid}{uri} permanent
+}
+
+api.{$DOMAIN_NAME:invalid} {
     reverse_proxy backend:8080
+
+    header {
+        -X-Powered-By
+        -Server
+
+        # enable HSTS
+        Strict-Transport-Security max-age=31536000;
+
+        # disable clients from sniffing the media type
+        X-Content-Type-Options nosniff
+
+        # clickjacking protection
+        X-Frame-Options DENY
+
+        # XSS Protection
+        X-XSS-Protection "1; mode=block"
+    }
+
+	rate_limit {
+        # limit requests based on IP address
+        zone api_limit {
+            key {remote_host}
+            # if using Cloudflare proxy, use the following key:
+            # key {http.request.header.CF-Connecting-IP}
+            events 100 # limit to 100 requests
+            window 1m # per minute
+        }
+
+        zone burst_limit {
+            key {remote_host}
+            # if using Cloudflare proxy, use the following key:
+            # key {http.request.header.CF-Connecting-IP}
+            events 20 # limit to 20 requests
+            window 1s # per second
+        }
+    }
 }

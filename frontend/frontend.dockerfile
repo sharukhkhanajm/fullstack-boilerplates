@@ -1,5 +1,5 @@
-# Use a Node.js image
-FROM node:18-alpine3.17
+# Development stage
+FROM node:18-alpine3.17 AS dev
 
 # Set the working directory
 WORKDIR /app
@@ -13,4 +13,10 @@ RUN npm ci
 # Copy everything to the container
 COPY . .
 
-CMD [ "npm", "run", "dev" ]
+RUN npm run build
+
+# Production stage
+FROM caddy:2-alpine AS prod
+COPY Caddyfile /etc/caddy/Caddyfile
+COPY --from=dev /app/dist /srv
+
