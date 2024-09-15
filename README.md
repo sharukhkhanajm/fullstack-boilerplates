@@ -24,6 +24,8 @@ Simply clone the repository and checkout the branch for the stack you need. Foll
 ## Can I contribute?
 Absolutely! We welcome contributions. Feel free to open issues or submit pull requests to add new stacks or improve existing ones.
 
+You can find more details on how to contribute [here](https://docs.github.com/en/get-started/exploring-projects-on-github/contributing-to-a-project) 
+
 ## Getting Started
 
 **!!important**
